@@ -2,7 +2,7 @@
 
 import os
 import subprocess
-from setuptools import find_packages, setup, Extension
+from setuptools import find_packages, setup
 from torch.utils import cpp_extension
 
 include_dir = cpp_extension.include_paths()
@@ -16,13 +16,13 @@ subprocess.run(compile_commands, check=True)
 setup(
     name='pypipeec',
     ext_modules=[
-        Extension(
-            name='pipeec',
-            sources=['pypipeec/module.cpp'],
-            include_dirs=include_dir,
-            language='c++',
-            extra_compile_args=['-Ipipeec'],
-            extra_link_args=['-Lpipeec', '-lpipeec']
+        cpp_extension.CppExtension(
+         name='pipeec',
+         sources=['pypipeec/module.cpp'],
+         include_dirs=include_dir,
+         language='c++',
+         extra_compile_args=['-Ipipeec'],
+         extra_link_args=['-Lpipeec', '-lpipeec']
         )
     ],
     cmdclass={
