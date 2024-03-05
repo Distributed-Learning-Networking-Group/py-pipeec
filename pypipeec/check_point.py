@@ -46,28 +46,42 @@ class ModuleKeeper:
 
 class CheckPointer:
 
-    def __init__(self, conf_path: str, module: torch.nn.Module, ft: int) -> None:
-        self._conf_path = conf_path
-        with open(conf_path, "r", encoding="utf-8") as fp:
-            conf_json = json.load(fp)
-        conf = NetworkConfig(*conf_json)
-        self._conf = conf
-        self._keeper = ModuleKeeper(module, conf.Local_rank)
+    def __init__(self, conf_str: str, module: torch.nn.Module, ft: int, is_path: bool = False) -> None:
+        self._conf_str = conf_str
+        self._is_path = is_path
+        self._started = False
+
+        self._keeper: ModuleKeeper = None
         self._ft = ft
         self._module = module
 
     def __enter__(self):
-        pipeec.Start(self._conf_path, self._ft)
+        self.start()
         return self
 
     def __exit__(self, _, __, ___):
-        return pipeec.Shutdown()
+        if self._started:
+            if self.shutdown():
+                self._started = False
 
     def start(self) -> bool:
-        return pipeec.Start(self._conf_path, self._ft)
+        if self._started:
+            return False
+        if self._is_path:
+            with open(self._conf_str, "r", encoding="utf-8") as fp:
+                conf_str = fp.read()
+        else:
+            conf_str = self._conf_str
+        conf = NetworkConfig(*json.loads(conf_str))
+        self._keeper = ModuleKeeper(self._module, conf.Local_rank)
+        self._started = pipeec.StartStrConf(conf_str, self._ft)
+        return self._started
 
     def shutdown(self) -> bool:
-        return pipeec.Shutdown()
+        if not self._started:
+            return False
+        self._started = not pipeec.Shutdown()
+        return not self._started
 
     def store(self, data: torch.Tensor):
         pipeec.Store(data, self._keeper.key(data))

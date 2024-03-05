@@ -22,9 +22,15 @@ bool Load(torch::Tensor t, GoInt key) {
   return ret == 0;
 }
 
-bool Start(std::string conf_path, int ft) {
+bool StartPath(std::string conf_path, int ft) {
   auto p = const_cast<char *>(conf_path.c_str());
-  auto ret = ::Start(p, ft);
+  auto ret = ::StartPath(p, ft);
+  return ret == 0;
+}
+
+bool StartStrConf(std::string conf_str, int ft) {
+  auto p = const_cast<char *>(conf_str.c_str());
+  auto ret = ::StartStrConf(p, ft);
   return ret == 0;
 }
 
@@ -38,6 +44,7 @@ bool Shutdown() {
 PYBIND11_MODULE(pipeec, m) {
   m.def("Store", pipeec::Store, "store tensor");
   m.def("Load", pipeec::Load, "load tensor");
-  m.def("Start", pipeec::Start, "start server");
+  m.def("StartPath", pipeec::StartPath, "start server");
+  m.def("StartStrConf", pipeec::StartStrConf, "start server");
   m.def("Shutdown", pipeec::Shutdown, "start server");
 }

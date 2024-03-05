@@ -21,8 +21,8 @@ setup(
             sources=['pypipeec/module.cpp'],
             include_dirs=include_dir,
             language='c++',
-            extra_compile_args=['-Ipipec'],
-            extra_link_args=['-Lpipec', '-lpipeec']
+            extra_compile_args=['-Ipipeec'],
+            extra_link_args=['-Lpipeec', '-lpipeec']
         )
     ],
     cmdclass={
