@@ -25,6 +25,7 @@ class ModuleKeeper:
         self._module = module
         self._keys = {}
         self._cnt = 0
+        self._init_keys()
 
     def _init_keys(self):
         for param in self._module.parameters():
@@ -72,7 +73,7 @@ class CheckPointer:
                 conf_str = fp.read()
         else:
             conf_str = self._conf_str
-        conf = NetworkConfig(*json.loads(conf_str))
+        conf = NetworkConfig(**json.loads(conf_str))
         self._keeper = ModuleKeeper(self._module, conf.Local_rank)
         self._started = pipeec.StartStrConf(conf_str, self._ft)
         return self._started
