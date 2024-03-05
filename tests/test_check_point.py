@@ -66,16 +66,16 @@ class TestCheckPointer(unittest.TestCase):
             torch.save(self.module, tmp_file)
             digest_origin = hashlib.file_digest(tmp_file, "sha256")
 
-        with CheckPointer(_get_conf_str(confs[0]), self.module, self.ft) as ckpter:
+        with CheckPointer(_get_conf_str(0), self.module, self.ft) as ckpter:
             ckpter.store_module()
 
         new_module = resnet50()
-        with CheckPointer(_get_conf_str(confs[0]), new_module, self.ft) as ckpter:
+        with CheckPointer(_get_conf_str(0), new_module, self.ft) as ckpter:
             ckpter.load_module()
             with tempfile.TemporaryFile("w+b") as tmp_file:
                 torch.save(new_module, tmp_file)
                 digest = hashlib.file_digest(tmp_file, "sha256")
-        self.assertEqual(digest_origin, digest)
+        self.assertEqual(digest_origin.hexdigest(), digest.hexdigest())
         stop_event.set()
         stop_event.wait()
 
