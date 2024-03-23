@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 from torch.utils import cpp_extension
 
 include_dir = cpp_extension.include_paths()
-golib_include = os.path.join(os.getcwd(), "pipec")
+golib_include = os.path.join(os.getcwd(), "pipeec")
 include_dir.append(golib_include)
 
 compile_commands = ["go", "build", "-C", "pipeec",
@@ -17,11 +17,10 @@ setup(
     name='pypipeec',
     ext_modules=[
         cpp_extension.CppExtension(
-         name='pipeec',
-         sources=['pypipeec/module.cpp'],
+         name='pypipeec.core',
+         sources=['module.cpp'],
          include_dirs=include_dir,
          language='c++',
-         extra_compile_args=['-Ipipeec'],
          extra_link_args=['-Lpipeec', '-lpipeec']
         )
     ],
