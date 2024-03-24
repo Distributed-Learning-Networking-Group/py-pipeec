@@ -1,3 +1,6 @@
 [submodule "pipeec"]
 	path = pipeec
 	url = https://github.com/Distributed-Learning-Networking-Group/pipeec.git 
+[submodule "torchgpipe"]
+	path = torchgpipe
+	url = https://github.com/Distributed-Learning-Networking-Group/torchgpipe.git
