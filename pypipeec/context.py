@@ -5,9 +5,9 @@ from typing import Dict
 
 @dataclass
 class NetworkConfig:
-    World_size: int
-    Local_rank: int
-    Fault_tolerance: int
+    WorldSize: int
+    LocalRank: int
+    FaultTolerance: int
     Addrs: Dict[int, str]
     Service: str
     BlockNumber: int
