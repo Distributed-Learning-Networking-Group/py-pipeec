@@ -21,7 +21,7 @@ setup(
          sources=['module.cpp'],
          include_dirs=include_dir,
          language='c++',
-         extra_link_args=['-Lpipeec', '-lpipeec']
+         extra_link_args=['-Lpipeec', '-lpipeec', '-lresolv']
         )
     ],
     cmdclass={
