@@ -7,7 +7,7 @@ from pypipeec.context import NetworkConfig, json_dumps
 
 
 class CheckPointer:
-    """Helper class for checkpointing a given module.
+    """Helper class for checkpointing tensors to local/remote shared memory.
     """
 
     def __init__(
@@ -31,12 +31,12 @@ class CheckPointer:
         self._checkpointer = core.NewCheckPointer(
             self._ckpter_type, json_dumps(config))
 
-    def _shutdown(self):
-        core.Shutdown(self._checkpointer)
+    def _shutdown(self, unlink: bool):
+        core.Shutdown(self._checkpointer, unlink)
 
     @contextmanager
-    def run_context(self, config: NetworkConfig, start_timestamp: int):
+    def run_context(self, config: NetworkConfig, start_timestamp: int, unlink: bool):
         self._timestamp = start_timestamp
         self._start(config)
         yield
-        self._shutdown()
+        self._shutdown(unlink)

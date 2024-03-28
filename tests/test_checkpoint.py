@@ -8,39 +8,43 @@ from pypipeec.checkpoint import CheckPointer, NetworkConfig
 
 
 def _test_confs(
+    name: str,
     base_port: int,
     num_worker: int,
     fault_tolerance: int,
     service: str,
     block_number: int,
 ):
+    names = {
+        i: name + f"_{i}" for i in range(num_worker)
+    }
     addrs = {
         i: f"localhost:{base_port + i}" for i in range(num_worker)
     }
     confs = {
-        i: NetworkConfig(num_worker, i, fault_tolerance, addrs, service, block_number) for i in range(num_worker)
+        i: NetworkConfig(num_worker, i, fault_tolerance, addrs, names, service, block_number) for i in range(num_worker)
     }
     return confs
 
 
 def test_checkpoint_tensor_mem():
-    confs = _test_confs(0, 8, 3, "mem", 32)
+    confs = _test_confs("test_checkpoint_tensor_mem", 0, 8, 3, "mem", 32)
     ckpter = CheckPointer()
 
     t = torch.randint(0, 2048, (1024,))
     t_test = torch.zeros_like(t)
 
-    with ckpter.run_context(confs[0], 1):
+    with ckpter.run_context(confs[0], 1, True):
         ckpter.checkpoint(t, 3)
         ckpter.load(t_test, 3)
         assert torch.equal(t, t_test)
 
 
 def test_checkpoint_resnet50():
-    confs = _test_confs(0, 8, 3, "mem", 512)
+    confs = _test_confs("test_checkpoint_tensor_mem", 0, 8, 3, "mem", 512)
     ckpter = CheckPointer()
 
-    with ckpter.run_context(confs[0], 1):
+    with ckpter.run_context(confs[0], 1, True):
         module = resnet50(weights=ResNet50_Weights.DEFAULT)
 
         # caculate origional module checkpoint sha256 checksum

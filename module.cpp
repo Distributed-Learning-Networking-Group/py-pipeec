@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <libpipeec.h>
 #include <torch/extension.h>
 
@@ -8,13 +7,13 @@ auto NewCheckPointer(char *ckpt, char *conf_str) {
   return ::NewCheckPointer(ckpt, conf_str);
 }
 
-auto Store(GoUintptr check_pointer, torch::Tensor t, GoInt data_id,
+auto Store(GoInt checkpointer_idx, torch::Tensor t, GoInt data_id,
            GoInt timestamp) {
   auto &store = t.storage();
   auto src = store.data();
   auto len = store.nbytes();
   // clang-format off
-  return ::Store(check_pointer,
+  return ::Store(checkpointer_idx,
                  data_id, 
                  reinterpret_cast<GoUintptr>(src),
                  static_cast<GoInt64>(len), 
@@ -22,7 +21,7 @@ auto Store(GoUintptr check_pointer, torch::Tensor t, GoInt data_id,
   // clang-format on
 }
 
-auto Load(GoUintptr check_pointer, torch::Tensor t, GoInt data_id) {
+auto Load(GoInt check_pointer, torch::Tensor t, GoInt data_id) {
   auto &store = t.storage();
   auto dst = store.data();
   auto len = store.nbytes();
@@ -36,8 +35,8 @@ auto Load(GoUintptr check_pointer, torch::Tensor t, GoInt data_id) {
   // clang-format on 
 }
 
-auto Shutdown(std::uintptr_t check_pointer) {
-  return ::Shutdown(static_cast<GoUintptr>(check_pointer));
+auto Shutdown(GoInt check_pointer, bool unlink) {
+  return ::Shutdown(check_pointer, unlink);
 }
 
 } // namespace pipeec

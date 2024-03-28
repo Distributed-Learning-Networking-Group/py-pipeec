@@ -65,7 +65,7 @@ def Store(checkpointer: int, tensor: torch.Tensor, data_id: int, timestamp: int)
     ...
 
 
-def Shutdown(checkpointer: int):
+def Shutdown(checkpointer: int, unlink: bool):
     """Shutdown the checkpointer
 
     Args:
