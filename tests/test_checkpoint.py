@@ -34,18 +34,19 @@ def test_checkpoint_tensor_mem():
     t = torch.randint(0, 2048, (1024,))
     t_test = torch.zeros_like(t)
 
-    with ckpter.run_context(confs[0], 1, True):
-        ckpter.checkpoint(t, 3)
-        ckpter.load(t_test, 3)
+    with ckpter.run_context(confs[0], True):
+        assert ckpter.checkpoint_tensor(t, 3, 4)
+        assert ckpter.load_tensor(t_test, 3) == 4
         assert torch.equal(t, t_test)
 
 
 def test_checkpoint_resnet50():
-    confs = _test_confs("test_checkpoint_tensor_mem", 0, 8, 3, "mem", 512)
+    confs = _test_confs("test_checkpoint_resnet50", 0, 8, 3, "mem", 1024)
     ckpter = CheckPointer()
 
-    with ckpter.run_context(confs[0], 1, True):
-        module = resnet50(weights=ResNet50_Weights.DEFAULT)
+    module = resnet50(weights=ResNet50_Weights.DEFAULT)
+
+    with ckpter.run_module_context(module, 0, confs[0], True):
 
         # caculate origional module checkpoint sha256 checksum
         with tempfile.TemporaryFile("w+b") as tmp_file:
@@ -53,17 +54,19 @@ def test_checkpoint_resnet50():
             digest_origin = hashlib.file_digest(tmp_file, "sha256")
 
         # checkpoint
-        for tensor_id, parameter in enumerate(module.parameters()):
-            ckpter.checkpoint(parameter, tensor_id)
+        ckpter.checkpoint_module()
 
-        new_module = resnet50()
+        # zero_ module parameter
+        with torch.no_grad():
+            for param in module.parameters():
+                param.zero_()
+
         # load checkpoint
-        for tensor_id, parameter in enumerate(new_module.parameters()):
-            ckpter.load(parameter, tensor_id)
+        ckpter.load_module()
 
         # caculate new module checkpoint sha256 checksum
         with tempfile.TemporaryFile("w+b") as tmp_file:
-            torch.save(new_module, tmp_file)
+            torch.save(module, tmp_file)
             digest_new = hashlib.file_digest(tmp_file, "sha256")
 
         assert digest_origin.hexdigest() == digest_new.hexdigest()
