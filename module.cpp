@@ -17,7 +17,7 @@ auto Store(GoInt checkpointer_idx, torch::Tensor t, GoInt data_id,
                  data_id, 
                  reinterpret_cast<GoUintptr>(src),
                  static_cast<GoInt64>(len), 
-                 timestamp);
+                 timestamp) == 0;
   // clang-format on
 }
 
