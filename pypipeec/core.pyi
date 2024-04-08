@@ -1,3 +1,4 @@
+# pylint: disable=C0103, W0613
 import torch
 
 
@@ -26,7 +27,6 @@ def NewCheckPointer(checkpointer_type: str, network_config: str) -> int:
     Returns:
         int: _description_
     """
-    ...
 
 
 def Load(checkpointer: int, tensor: torch.Tensor, data_id: int) -> int:
@@ -41,7 +41,6 @@ def Load(checkpointer: int, tensor: torch.Tensor, data_id: int) -> int:
         int: timestamp of the returned tensor. Return value 0 means
         a failed load operation.
     """
-    ...
 
 
 def Store(checkpointer: int, tensor: torch.Tensor, data_id: int, timestamp: int) -> bool:
@@ -62,7 +61,6 @@ def Store(checkpointer: int, tensor: torch.Tensor, data_id: int, timestamp: int)
     Returns:
         bool: True if this operation succeeded  
     """
-    ...
 
 
 def Shutdown(checkpointer: int, unlink: bool):
@@ -71,4 +69,3 @@ def Shutdown(checkpointer: int, unlink: bool):
     Args:
         checkpointer (int): pointer to the checkpoitner object, created by 'NewCheckPoitner' 
     """
-    ...
