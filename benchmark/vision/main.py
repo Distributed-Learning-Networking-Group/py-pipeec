@@ -242,6 +242,31 @@ def run_epoch(
     return throughput, elapsed_time
 
 
+def network_configs(
+    world_size: int,
+    local_rank: int,
+    names: Dict[int, str],
+):
+    # TODO automatic address generation
+    # addrs = {
+    #     i: f"192.168.124.10{i + 1}" for i in range(world_size)
+    # }
+    addrs = {
+        0: "localhost:17382",
+        1: "localhost:17387",
+    }
+
+    return {i: context.NetworkConfig(
+        WorldSize=world_size,
+        LocalRank=local_rank,
+        Addrs=addrs,
+        Names=names,
+        Service="rpc",
+        BlockNumber=512,
+        FaultTolerance=1,
+    ) for i in range(world_size)}
+
+
 @click.command()
 @click.pass_context
 @click.argument(
@@ -307,8 +332,8 @@ def cli(
     dataset_path: str,
 ) -> None:
     """vision model training speed benchmark"""
-    world = int(os.environ["WORLD_SIZE"])
-    rank = int(os.environ["RANK"])
+    world = int(os.environ["LOCAL_WORLD_SIZE"])
+    rank = int(os.environ["LOCAL_RANK"])
 
     device = devices[0]
     workers = {rk: f"worker{rk}" for rk in range(world)}
@@ -365,11 +390,15 @@ def cli(
         # init checkpointer
         base_id = checkpoint.get_base_id(model_local, balance_, rank)
         ckpter = checkpoint.CheckPointer("rs")
-        conf = context.NetworkConfig(
-            world, rank, 0, {}, workers, "mem", 512
+        # conf = context.NetworkConfig(
+        #     world, rank, 0, {}, workers, "mem", 512
+        # )
+
+        confs = network_configs(
+            world, rank, workers
         )
 
-        with ckpter.run_module_context(model.model(), base_id, conf, False):
+        with ckpter.run_module_context(model.model(), base_id, confs[rank], False):
             ckpter.load_module()
             print("timestamps: ", ckpter.timestamps())
             # init rpc
