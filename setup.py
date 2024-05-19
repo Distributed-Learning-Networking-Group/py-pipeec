@@ -21,11 +21,11 @@ setup(
          sources=['module.cpp'],
          include_dirs=include_dir,
          language='c++',
-         extra_link_args=['-Lpipeec', '-lpipeec', '-lresolv']
+         extra_link_args=['-Lpipeec', '-lpipeec', '-lresolv'],
         )
     ],
     cmdclass={
         'build_ext': cpp_extension.BuildExtension
     },
-    packages=find_packages(where="./pypipeec")
+    packages=find_packages(where=".", include=("pypipeec",))
 )
