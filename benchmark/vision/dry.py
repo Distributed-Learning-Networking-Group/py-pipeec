@@ -30,8 +30,8 @@ from torchgpipe.distributed.gpipe import (DistributedGPipe,
 Stuffs = Tuple[nn.Module, int, List[torch.device]]
 Experiment = Callable[[nn.Module, List[int]], Stuffs]
 
-NITERS = 0
-CHECK_CYCLE = 4
+NITERS = 4
+CHECK_CYCLE = 1
 
 
 class Experiments:
@@ -437,7 +437,7 @@ def cli(
         )
         svc_id = checkpoint.init_service(conf.Addrs[rank])
         checkpoint_name = f"check/stage_{rank}"
-        dry_run = False
+        dry_run = True
         checkpoint_context = checkpoint.CheckPointContext(
             svc_id, checkpoint_name, conf, dry_run=dry_run
         )
