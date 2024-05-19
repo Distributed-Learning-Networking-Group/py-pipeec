@@ -9,9 +9,6 @@ class NetworkConfig:
     LocalRank: int
     FaultTolerance: int
     Addrs: Dict[int, str]
-    Names: Dict[int, str]
-    Service: str
-    BlockNumber: int
 
 
 def json_dumps(config: NetworkConfig):
