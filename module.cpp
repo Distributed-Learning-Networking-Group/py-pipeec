@@ -1,49 +1,40 @@
 #include <libpipeec.h>
 #include <torch/extension.h>
+#include <utility>
+#include <type_traits>
+#include <pybind11/pybind11.h>
 
-namespace pipeec {
+namespace pypipeec {
 
-auto NewCheckPointer(char *ckpt, char *conf_str) {
-  return ::NewCheckPointer(ckpt, conf_str);
+namespace detail {
+template <typename T> struct function_traits {};
+
+template <typename ret_type, typename... arg_types>
+struct function_traits<ret_type(arg_types...)> {
+
+  template <typename func> static constexpr auto prepend_op(func &&f) {
+    return [f](arg_types... args) {
+      pybind11::gil_scoped_release release;
+      return f(std::forward<arg_types>(args)...);
+    };
+  }
+};
+} // namespace detail
+
+template <typename T> auto no_gil(T&& func) {
+  return detail::function_traits<std::remove_reference_t<T>>::prepend_op(func);
 }
 
-auto Store(GoInt checkpointer_idx, torch::Tensor t, GoInt data_id,
-           GoInt timestamp) {
-  auto &store = t.storage();
-  auto src = store.data();
-  auto len = store.nbytes();
-  // clang-format off
-  return ::Store(checkpointer_idx,
-                 data_id, 
-                 reinterpret_cast<GoUintptr>(src),
-                 static_cast<GoInt64>(len), 
-                 timestamp) == 0;
-  // clang-format on
-}
+} // namespace pypipeec
 
-auto Load(GoInt check_pointer, torch::Tensor t, GoInt data_id) {
-  auto &store = t.storage();
-  auto dst = store.data();
-  auto len = store.nbytes();
-  // clang-format off
-  return ::Load(
-    check_pointer,
-    data_id, 
-    reinterpret_cast<GoUintptr>(dst), 
-    static_cast<GoInt64>(len)
-    );
-  // clang-format on 
-}
-
-auto Shutdown(GoInt check_pointer, bool unlink) {
-  return ::Shutdown(check_pointer, unlink);
-}
-
-} // namespace pipeec
 
 PYBIND11_MODULE(core, m) {
-  m.def("NewCheckPointer", pipeec::NewCheckPointer, "store tensor");
-  m.def("Store", pipeec::Store, "store tensor");
-  m.def("Load", pipeec::Load, "load tensor");
-  m.def("Shutdown", pipeec::Shutdown, "start server");
+  m.def("PipeecInitService", pypipeec::no_gil(PipeecInitService));
+  m.def("PipeecInitCheckPointContext", pypipeec::no_gil(PipeecInitCheckPointContext));
+  m.def("PipeecDestroyCheckPointContext", pypipeec::no_gil(PipeecDestroyCheckPointContext));
+  m.def("PipeecStartTransfer", pypipeec::no_gil(PipeecStartTransfer));
+  m.def("PipeecSuspendTransfer", pypipeec::no_gil(PipeecSuspendTransfer));
+  m.def("PipeecResumeTransfer", pypipeec::no_gil(PipeecResumeTransfer));
+  m.def("PipeecRead", pypipeec::no_gil(PipeecRead));
+  m.def("PipeecWaitTransfer", pypipeec::no_gil(PipeecWaitTransfer));
 }
